@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: postgres_container
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: rocket
+      POSTGRES_PASSWORD: 1234!
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spring_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/user_db
+      SPRING_DATASOURCE_USERNAME: rocket
+      SPRING_DATASOURCE_PASSWORD: 1234!
+    networks:
+      - app-net
+
+volumes:
+  postgres_data:
+
+networks:
+  app-net:
