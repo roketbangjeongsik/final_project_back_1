@@ -10,6 +10,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+
+                .cors(cors -> {}) //cors 설정 활성화
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/oauth2/authorization/**").permitAll()
                         .requestMatchers("/login/oauth2/code/**").permitAll()
