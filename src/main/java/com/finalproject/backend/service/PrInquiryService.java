@@ -21,7 +21,7 @@ public class PrInquiryService {
 
     public List<PrResponseDTO> fetchPrs(String owner, String repo, OAuth2AccessToken token) {
         //호출할 URL
-        String url = String.format("https://api.github.com/repos/%s/%s/pulls", owner, repo);
+        String url = String.format("https://api.github.com/repos/%s/%s/pulls?state=all", owner, repo);
 
         //HTTP Header 세팅: Authorization: Bearer <토큰>
         HttpHeaders headers = new HttpHeaders();
