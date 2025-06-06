@@ -1,10 +1,10 @@
-package com.finalproject.backend.dto;
+package com.finalproject.backend.dto.github;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-public class GithubRepoResponse {
+public class GithubRepoResponseDTO {
     private String name;
 
     @JsonProperty("full_name")
