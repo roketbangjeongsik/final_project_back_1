@@ -44,21 +44,16 @@ public class GithubController {
 
     // 사용자 레포지토리 리스트 조회
     @Operation(summary = "사용자 레포지토리 목록 조회")
-    @GetMapping("/users/{username}/repos")
-    public ResponseEntity<List<GithubRepoListItemDTO>> getUserRepositories(
-            @PathVariable String username,
+    @GetMapping("/user/repos")
+    public ResponseEntity<List<GithubRepoListItemDTO>> getAuthenticatedUserRepositories(
             @Parameter(hidden = true)
             @RegisteredOAuth2AuthorizedClient("github") OAuth2AuthorizedClient client) {
 
         String token = getToken(client);
-
-        List<GithubRepoListItemDTO> repositories = githubService.getUserRepositories(
-                sanitize(username, "username"),
-                token
-        );
-
+        List<GithubRepoListItemDTO> repositories = githubService.getUserRepositories(token);
         return ResponseEntity.ok(repositories);
     }
+
 
     //Pull Request 커밋 목록 조회
     @Operation(summary = "Pull Request 커밋 목록 조회")

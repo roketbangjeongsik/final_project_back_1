@@ -23,11 +23,12 @@ public class GithubService {
     private static final String GITHUB_API_URL = "https://api.github.com";
 
 // 사용자의 저장소 리스트 조회
-    public List<GithubRepoListItemDTO> getUserRepositories(String username, String token) {
-        String url = String.format("%s/users/%s/repos", GITHUB_API_URL, sanitize(username, "username"));
+    public List<GithubRepoListItemDTO> getUserRepositories(String token) {
+        String url = String.format("%s/user/repos", GITHUB_API_URL);
         GithubRepoListItemDTO[] repoArray = fetchGithubData(url, token, GithubRepoListItemDTO[].class);
         return Arrays.asList(repoArray);
     }
+
 
 // 개별 저장소 정보 조회 (캐시 사용)
     @Cacheable(value = "githubRepoCache", key = "#owner + '/' + #repo")
