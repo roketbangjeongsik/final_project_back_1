@@ -30,10 +30,8 @@ public class PrInquiryController {
             @PathVariable String owner,
             @PathVariable String repo
     ) {
-        // OAuth2AuthorizedClient를 통해 AccessToken 획득
         OAuth2AccessToken token = client.getAccessToken();
 
-        // RestTemplate 기반 서비스 호출
         return prInquiryService.fetchPrs(owner, repo, token);
     }
 
