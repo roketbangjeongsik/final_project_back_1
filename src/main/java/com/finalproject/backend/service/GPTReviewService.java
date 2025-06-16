@@ -46,7 +46,7 @@ public class GPTReviewService {
                 "user",   user.content());
 
         ChatCompletionRequest req = ChatCompletionRequest.builder()
-                .model("gpt-3.5-turbo")
+                .model("gpt-4o-mini")
                 .messages(List.of(sysMsg, userMsg))
                 .temperature(0.2)
                 .build();

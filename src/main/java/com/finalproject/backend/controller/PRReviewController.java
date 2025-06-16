@@ -1,6 +1,7 @@
 package com.finalproject.backend.controller;
 
 import com.finalproject.backend.dto.GTP.ChatCompletionResponse;
+import com.finalproject.backend.dto.GTP.PatchRequest;
 import com.finalproject.backend.service.GPTReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +18,12 @@ public class PRReviewController {
     private final GPTReviewService GPTReviewService;  // 인스턴스 주입
 
     @PostMapping("/review")
-    public ChatCompletionResponse review(@RequestBody Map<String, String> body) {
-        return GPTReviewService.reviewPullRequest(body.get("diff"));
+    public ChatCompletionResponse review(@RequestBody PatchRequest body) {
+        return GPTReviewService.reviewPullRequest(body.getPatch());
     }
 
     @PostMapping("/refactor")
-    public ChatCompletionResponse refactor(@RequestBody Map<String, String> body) {
-        return GPTReviewService.refactorPullRequest(body.get("diff"));
+    public ChatCompletionResponse refactor(@RequestBody PatchRequest body) {
+        return GPTReviewService.refactorPullRequest(body.getPatch());
     }
 }
