@@ -3,6 +3,7 @@ package com.finalproject.backend.service;
 import com.finalproject.backend.dto.GTP.ChatChoice;
 import com.finalproject.backend.dto.GTP.ChatCompletionResponse;
 import com.finalproject.backend.dto.GTP.ChatMessage;
+import com.finalproject.backend.dto.GTP.SafeChatMessage;
 import com.theokanning.openai.service.OpenAiService;
 import com.theokanning.openai.completion.chat.ChatCompletionRequest;
 import com.theokanning.openai.completion.chat.ChatCompletionResult;
@@ -18,32 +19,53 @@ public class GPTReviewService {
 
     private final OpenAiService openAiService;
 
-    private static final ChatMessage REVIEW_SYSTEM = new ChatMessage(
+    private String decodeEscapedDiff(String diff){
+        return diff
+                .replace("\\n", "\n")
+                .replace("\\t", "\t")
+                .replace("\\\"", "\"")
+                .replace("\\\\", "\\");
+    }
+
+    private static final ChatMessage SYSTEM_MESSAGE = new ChatMessage(
             "system",
-            "당신은 시니어 개발자입니다. 제공된 PR의 변경 사항을 버그·보안·스타일·모범 사례 관점에서 분석하고 지적하되, 코드 리팩토링은 하지 마세요."
+            "당신은 다양한 언어에 능숙한 시니어 개발자입니다."
     );
-    private static final ChatMessage REFACTOR_SYSTEM = new ChatMessage(
-            "system",
-            "당신은 시니어 개발자입니다. 제공된 PR의 변경 사항을 가독성·성능·모범 사례 관점에서 개선(리팩토링)하되, 리뷰 평가는 생략하세요."
-    );
-    private static final String USER_TEMPLATE =
-            "다음 PR의 변경 사항을 처리해 주세요:\n```diff\n%s\n```";
+
+    private static final String REVIEW_PROMPT =
+            """
+            제공된 코드의 주요 기능, 동작 흐름, 그리고 코드의 목적을 이해하기 쉽게 설명해주세요.
+    
+            ```diff
+            %s
+            ```
+            """;
+
+    private static final String REFACTOR_PROMPT =
+            """
+            제공된 코드의 가독성, 재사용성을 고려하여 리팩토링이 필요한 부분을 지적하고,
+            개선 방향과 예시 코드를 함께 제안해주세요.
+    
+            ```diff
+            %s
+            ```
+            """;
 
     public ChatCompletionResponse reviewPullRequest(String diff) {
-        ChatMessage user = new ChatMessage("user", String.format(USER_TEMPLATE, diff));
-        return callOpenAI(REVIEW_SYSTEM, user);
+        String decodeDiff = decodeEscapedDiff(diff);
+        ChatMessage user = new ChatMessage("user", String.format(REVIEW_PROMPT, decodeDiff));
+        return callOpenAI(SYSTEM_MESSAGE, user);
     }
 
     public ChatCompletionResponse refactorPullRequest(String diff) {
-        ChatMessage user = new ChatMessage("user", String.format(USER_TEMPLATE, diff));
-        return callOpenAI(REFACTOR_SYSTEM, user);
+        String decodeDiff = decodeEscapedDiff(diff);
+        ChatMessage user = new ChatMessage("user", String.format(REFACTOR_PROMPT, decodeDiff));
+        return callOpenAI(SYSTEM_MESSAGE, user);
     }
 
     private ChatCompletionResponse callOpenAI(ChatMessage system, ChatMessage user) {
-        var sysMsg = new com.theokanning.openai.completion.chat.ChatMessage(
-                "system", system.content());
-        var userMsg = new com.theokanning.openai.completion.chat.ChatMessage(
-                "user",   user.content());
+        var sysMsg = new SafeChatMessage("system", system.content());
+        var userMsg = new SafeChatMessage("user", user.content());
 
         ChatCompletionRequest req = ChatCompletionRequest.builder()
                 .model("gpt-4o-mini")
@@ -56,7 +78,10 @@ public class GPTReviewService {
         List<ChatChoice> choices = res.getChoices().stream()
                 .map(c -> new ChatChoice(
                         c.getIndex(),
-                        new ChatMessage(c.getMessage().getRole(), c.getMessage().getContent()),
+                        new ChatMessage( // ✅ 다시 원래 타입으로 감싸기
+                                c.getMessage().getRole(),
+                                c.getMessage().getContent()
+                        ),
                         c.getFinishReason()
                 ))
                 .collect(Collectors.toList());
